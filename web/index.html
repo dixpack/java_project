@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Velocita — Vehicle Rental System | Admin & Customer Portals</title>
+  
+  <!-- Modern Google Font: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- =========================================================
+       SECTION 1: AUTHENTICATION / LOGIN PORTAL
+       ========================================================= -->
+  <div id="login-view" class="login-wrapper">
+    <div class="login-card">
+      <div class="login-brand-icon">⚡</div>
+      <h2 class="login-title">VELOCITA RENTALS</h2>
+      <p class="login-subtitle">Sign in to access your fleet operations or customer portal</p>
+
+      <!-- Role Selector Toggle -->
+      <div class="role-switcher-box">
+        <button type="button" class="role-tab-btn active" id="tab-login-admin" onclick="switchLoginRole('admin')">
+          🛡️ Administrator
+        </button>
+        <button type="button" class="role-tab-btn" id="tab-login-customer" onclick="switchLoginRole('customer')">
+          👤 Sign In
+        </button>
+        <button type="button" class="role-tab-btn" id="tab-login-new-customer" onclick="switchLoginRole('new-customer')">
+          ✨ New Customer
+        </button>
+      </div>
+
+      <!-- Admin Login Form -->
+      <form id="form-login-admin" onsubmit="handleAdminLogin(event)">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="admin-username">Admin Username</label>
+          <input type="text" id="admin-username" value="admin" required placeholder="e.g. admin">
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="admin-password">Password</label>
+          <input type="password" id="admin-password" required placeholder="Enter admin password">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Sign In as Fleet Administrator
+        </button>
+      </form>
+
+      <!-- Existing Customer Login Form -->
+      <form id="form-login-customer" class="hidden" onsubmit="handleCustomerLogin(event)">
+        <div class="form-group" style="margin-bottom: 16px;">
+          <label for="customer-select-login">Select Registered Account</label>
+          <select id="customer-select-login">
+            <!-- Injected dynamically -->
+          </select>
+        </div>
+        <div style="text-align: center; margin: 12px 0; color: var(--text-dim); font-size: 0.8rem;">
+          — OR SIGN IN WITH ID / NAME —
+        </div>
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="customer-id-input">Customer ID or Full Name</label>
+          <input type="text" id="customer-id-input" placeholder="e.g. C001 or Anjali Menon">
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">
+          Sign In as Customer
+        </button>
+        <div style="margin-top: 14px; text-align: center; font-size: 0.84rem; color: var(--text-muted);">
+          New user? <a href="javascript:void(0)" onclick="switchLoginRole('new-customer')" style="color: var(--accent-emerald); font-weight: 700; text-decoration: underline;">Register &amp; verify driving licence</a>
+        </div>
+      </form>
+
+      <!-- New Customer Sign Up Form -->
+      <form id="form-login-new-customer" class="hidden" onsubmit="handleNewCustomerSignUp(event)">
+        <div style="background: var(--accent-emerald-soft); border: 1px solid var(--accent-emerald-border); padding: 10px 14px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.82rem; color: var(--accent-emerald); display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.2rem;">🪪</span>
+          <span><strong>Identity Verification:</strong> Valid driving licence number is verified before booking.</span>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="new-cust-name">Full Name *</label>
+          <input type="text" id="new-cust-name" required placeholder="e.g. Vikram Malhotra">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="new-cust-contact">Contact Details (Email or Phone) *</label>
+          <input type="text" id="new-cust-contact" required placeholder="e.g. vikram@example.com or +91 98765 43210">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="new-cust-licence">Driving Licence Number (Required for Verification) *</label>
+          <input type="text" id="new-cust-licence" required placeholder="e.g. DL-0420220019842 or KA0120210001234" oninput="verifyLicenceInput(this.value)">
+          <div id="licence-verification-badge" style="margin-top: 6px; font-size: 0.8rem; font-weight: 600; display: none;"></div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="new-cust-id">Preferred Customer ID <span style="color: var(--text-dim); font-weight: normal;">(Auto-assigned if empty)</span></label>
+          <input type="text" id="new-cust-id" placeholder="e.g. C004">
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block" style="padding: 12px; font-weight: 700;">
+          🚀 Verify Licence &amp; Create Account
+        </button>
+
+        <p style="text-align: center; margin-top: 14px; font-size: 0.84rem; color: var(--text-muted);">
+          Already registered? <a href="javascript:void(0)" onclick="switchLoginRole('customer')" style="color: var(--accent-emerald); font-weight: 700; text-decoration: underline;">Sign In here</a>
+        </p>
+      </form>
+
+      <!-- 1-Click Quick Demo Presets -->
+      <div class="quick-demo-login-box">
+        <h5>Quick Demo Access (1-Click)</h5>
+        <div class="quick-btn-group">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickLogin('admin')">
+            🛡️ Admin Demo
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickLogin('customer', 'C001')">
+            👤 Anjali Menon (C001)
+          </button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="quickLogin('customer', 'C002')">
+            👤 Rohan Das (C002)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       SECTION 2: MAIN APPLICATION (ADMIN & USER PANELS)
+       ========================================================= -->
+  <div id="app-view" class="hidden" style="min-height: 100vh; display: flex; flex-direction: column;">
+
+    <!-- Top Header Navigation -->
+    <header class="app-header">
+      <div class="container header-inner">
+        <div class="brand">
+          <div class="brand-icon">⚡</div>
+          <div class="brand-text">
+            <h1>VELOCITA RENTALS</h1>
+            <p id="portal-subheading">Fleet Management System</p>
+          </div>
+        </div>
+
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <!-- User Session Pill -->
+          <div class="user-session-badge" id="user-session-badge">
+            <span class="role-indicator role-admin" id="session-role-indicator">ADMIN</span>
+            <span id="session-username-display">Administrator</span>
+          </div>
+
+          <div class="header-status-badge" id="connection-badge">
+            <span class="pulse-dot" id="connection-pulse"></span>
+            <span>Live Engine</span>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <!-- Theme toggle -->
+          <button class="theme-toggle-btn" id="theme-toggle-btn" onclick="toggleTheme()" title="Switch theme">
+            🌙
+          </button>
+
+          <!-- Admin Quick Action Buttons (Hidden for Customer) -->
+          <div id="admin-quick-actions" style="display: flex; gap: 8px;">
+            <button class="btn btn-outline btn-sm" onclick="openAddVehicleModal()">
+              <span>+</span> Add Vehicle
+            </button>
+            <button class="btn btn-outline btn-sm" onclick="openAddCustomerModal()">
+              <span>+</span> Register Customer
+            </button>
+            <button class="btn btn-secondary btn-sm" onclick="resetToDefaultData()" title="Reset to initial sample dataset">
+              🔄 Reset Data
+            </button>
+          </div>
+
+          <!-- Sign Out Button -->
+          <button class="btn btn-outline btn-sm" onclick="handleLogout()" style="color: var(--accent-rose); border-color: var(--accent-rose-border);">
+            🚪 Sign Out
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="container" style="flex: 1; padding-top: 14px;">
+
+      <!-- ==========================================
+           ADMIN VIEW CONTAINER
+           ========================================== -->
+      <div id="admin-container">
+        <!-- Admin KPI Metrics Bar -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon-box metric-icon-blue">🚘</div>
+            <div class="metric-data">
+              <h4>Total Fleet</h4>
+              <div class="value" id="metric-total">0</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box metric-icon-green">✅</div>
+            <div class="metric-data">
+              <h4>Available Now</h4>
+              <div class="value" id="metric-available" style="color: var(--accent-emerald);">0</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box metric-icon-amber">🔑</div>
+            <div class="metric-data">
+              <h4>Currently Rented</h4>
+              <div class="value" id="metric-rented" style="color: var(--accent-amber);">0</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box metric-icon-purple">📊</div>
+            <div class="metric-data">
+              <h4>Active Leases</h4>
+              <div class="value" id="metric-active-leases">0</div>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-icon-box metric-icon-green">💰</div>
+            <div class="metric-data">
+              <h4>Gross Revenue</h4>
+              <div class="value" id="metric-revenue">₹0</div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Admin Navigation Tabs -->
+        <nav class="tabs-nav" aria-label="Admin tabs">
+          <button class="tab-btn active" data-tab="admin-fleet">
+            <span>🚗</span> Fleet Inventory
+          </button>
+          <button class="tab-btn" data-tab="admin-book">
+            <span>🔑</span> Book a Vehicle
+          </button>
+          <button class="tab-btn" data-tab="admin-return">
+            <span>🔄</span> Return & Settlement
+          </button>
+          <button class="tab-btn" data-tab="admin-customers">
+            <span>👥</span> Customer Directory
+          </button>
+          <button class="tab-btn" data-tab="admin-rentals">
+            <span>📋</span> Leases Ledger
+          </button>
+          <button class="tab-btn" data-tab="admin-scenarios">
+            <span>🧪</span> Test Scenarios Demo
+          </button>
+        </nav>
+
+        <!-- TAB 1: FLEET INVENTORY -->
+        <section id="admin-fleet" class="tab-content active">
+          <div class="toolbar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="admin-search-input" placeholder="Search by brand, model, or ID (e.g. Porsche, Tesla, V001)...">
+            </div>
+
+            <div class="filter-group" id="admin-type-filters">
+              <span style="font-size: 0.8rem; color: var(--text-dim); margin-right: 4px;">Type:</span>
+              <button class="chip-btn active" data-type="ALL">All Types</button>
+              <button class="chip-btn" data-type="CAR">🚗 Cars</button>
+              <button class="chip-btn" data-type="BIKE">🏍️ Bikes</button>
+              <button class="chip-btn" data-type="VAN">🚐 Vans</button>
+            </div>
+
+            <div class="filter-group" id="admin-status-filters">
+              <span style="font-size: 0.8rem; color: var(--text-dim); margin-right: 4px;">Status:</span>
+              <button class="chip-btn active" data-status="ALL">All</button>
+              <button class="chip-btn" data-status="AVAILABLE">Available</button>
+              <button class="chip-btn" data-status="RENTED">Rented</button>
+            </div>
+          </div>
+
+          <div class="fleet-grid" id="admin-fleet-grid"></div>
+        </section>
+
+        <!-- TAB 2: BOOK A VEHICLE -->
+        <section id="admin-book" class="tab-content">
+          <div class="panel-card" style="max-width: 840px; margin: 0 auto;">
+            <div class="panel-header">
+              <h2>🔑 Book & Dispatch Vehicle (Admin Console)</h2>
+              <p>Reserve an available vehicle for a registered customer. Real-time availability tracking will immediately flip vehicle status to RENTED.</p>
+            </div>
+
+            <form id="form-booking" onsubmit="handleBookingSubmit(event)">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="book-customer-select">Customer *</label>
+                  <select id="book-customer-select" required></select>
+                </div>
+
+                <div class="form-group">
+                  <label for="book-vehicle-select">Available Vehicle *</label>
+                  <select id="book-vehicle-select" required></select>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="book-start-date">Start Date *</label>
+                  <input type="date" id="book-start-date" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="book-end-date">End Date (Expected Return) *</label>
+                  <input type="date" id="book-end-date" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="book-deposit">Security Deposit Amount (₹) *</label>
+                  <input type="number" id="book-deposit" min="50" step="10" value="3000" required>
+                </div>
+
+                <div class="form-group">
+                  <label for="book-custom-rate">Daily Rate (₹) <span style="color: var(--accent-emerald); font-weight: 600; font-size: 0.8rem;">[Admin Price Override]</span></label>
+                  <input type="number" id="book-custom-rate" step="any" min="1" placeholder="Auto-fills from vehicle" oninput="updateBookingSummary()">
+                </div>
+              </div>
+
+              <div class="calc-summary" id="book-summary-box"></div>
+
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn btn-outline" onclick="switchAdminTab('admin-fleet')">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btn-confirm-booking">Confirm Booking & Dispatch</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 3: RETURN & SETTLEMENT -->
+        <section id="admin-return" class="tab-content">
+          <div class="panel-card" style="max-width: 840px; margin: 0 auto;">
+            <div class="panel-header">
+              <h2>🔄 Process Return & Penalty Settlement</h2>
+              <p>Inspect returned vehicles, calculate late penalties (₹200/day late), compute security deposit refunds, and instantly restore vehicle status to AVAILABLE.</p>
+            </div>
+
+            <form id="form-return" onsubmit="handleReturnSubmit(event)">
+              <div class="form-grid">
+                <div class="form-group" style="grid-column: 1 / -1;">
+                  <label for="return-rental-select">Select Active Rental to Return *</label>
+                  <select id="return-rental-select" required></select>
+                </div>
+
+                <div class="form-group">
+                  <label for="return-actual-date">Actual Return Date *</label>
+                  <input type="date" id="return-actual-date" required>
+                  <small style="color: var(--text-dim); margin-top: 4px;">
+                    Tip: Choose a date after the scheduled end date to test late fee penalty calculation.
+                  </small>
+                </div>
+              </div>
+
+              <div class="calc-summary" id="return-summary-box"></div>
+
+              <div style="display: flex; gap: 12px; justify-content: flex-end; margin-top: 20px;">
+                <button type="button" class="btn btn-outline" onclick="switchAdminTab('admin-fleet')">Back to Fleet</button>
+                <button type="submit" class="btn btn-primary" id="btn-process-return">Process Return & Settle Refund</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- TAB 4: CUSTOMER DIRECTORY -->
+        <section id="admin-customers" class="tab-content">
+          <div class="panel-card">
+            <div class="panel-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+              <div>
+                <h2>👥 Registered Customers Directory</h2>
+                <p>Patron database with detailed audit log of past and active leases.</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="openAddCustomerModal()">+ Register Customer</button>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Customer ID</th>
+                    <th>Full Name</th>
+                    <th>Contact Details</th>
+                    <th>Driving Licence</th>
+                    <th>Rental History Count</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="customers-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 5: LEASES LEDGER -->
+        <section id="admin-rentals" class="tab-content">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2>📋 Complete Leases & Transactions Ledger</h2>
+              <p>System-wide transactional record of all bookings, dates, costs, deposits, penalties, and returns.</p>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rental ID</th>
+                    <th>Customer</th>
+                    <th>Vehicle</th>
+                    <th>Duration Period</th>
+                    <th>Rental Cost</th>
+                    <th>Deposit</th>
+                    <th>Status</th>
+                    <th>Actions / Receipt</th>
+                  </tr>
+                </thead>
+                <tbody id="rentals-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- TAB 6: TEST SCENARIOS DEMO RUNNER -->
+        <section id="admin-scenarios" class="tab-content">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2>🧪 Interactive Test Scenarios & Demo Runner</h2>
+              <p>Execute verified business logic scenarios with 1-click presets to observe real-time availability updates, deposit refunds, and late penalties.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+              <div style="background: var(--bg-surface-elevated); padding: 22px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 1.4rem;">✅</span>
+                  <h3 style="font-size: 1.05rem;">Scenario 1: On-Time Return</h3>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); flex: 1;">
+                  Demonstrates returning a vehicle on or before the scheduled return date.
+                  <strong>Expected:</strong> ₹0 late fee penalty, 100% full deposit refund, and vehicle status immediately restored to AVAILABLE.
+                </p>
+                <button class="btn btn-primary btn-sm" onclick="runScenario('on-time')">Run On-Time Return Demo</button>
+              </div>
+
+              <div style="background: var(--bg-surface-elevated); padding: 22px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 1.4rem;">⚠️</span>
+                  <h3 style="font-size: 1.05rem;">Scenario 2: 2-Day Late Return</h3>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); flex: 1;">
+                  Simulates a vehicle returned 2 days past the scheduled due date.
+                  <strong>Expected:</strong> 2 days × ₹200/day = ₹400 penalty deducted from deposit. Net refund: ₹100.
+                </p>
+                <button class="btn btn-secondary btn-sm" onclick="runScenario('late-return')">Run Late Return Demo</button>
+              </div>
+
+              <div style="background: var(--bg-surface-elevated); padding: 22px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                  <span style="font-size: 1.4rem;">🚫</span>
+                  <h3 style="font-size: 1.05rem;">Scenario 3: Double Booking Prevention</h3>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); flex: 1;">
+                  Attempts to book a vehicle that is currently marked RENTED.
+                  <strong>Expected:</strong> The system strictly rejects the transaction and informs the user.
+                </p>
+                <button class="btn btn-outline btn-sm" onclick="runScenario('prevent-double-book')">Run Double Booking Test</button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- ==========================================
+           CUSTOMER / USER VIEW CONTAINER
+           ========================================== -->
+      <div id="customer-container" class="hidden">
+        <!-- Customer Greeting Banner -->
+        <div class="user-welcome-banner">
+          <div class="user-welcome-text">
+            <h2>Welcome back, <span id="customer-welcome-name">Patron</span>! 👋</h2>
+            <p>Browse our verified fleet of self-drive cars, bikes, and vans with live real-time booking.</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <div style="background: var(--bg-surface); padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.85rem; font-weight: 600;">
+              Account: <span id="customer-welcome-id" style="color: var(--accent-emerald);">C001</span>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="switchCustomerTab('cust-fleet')">
+              🚗 Browse Vehicles
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer Navigation Tabs -->
+        <nav class="tabs-nav" aria-label="Customer tabs">
+          <button class="tab-btn active" data-tab="cust-fleet">
+            <span>🚗</span> Available Rides Showroom
+          </button>
+          <button class="tab-btn" data-tab="cust-my-rentals">
+            <span>📋</span> My Bookings &amp; History
+          </button>
+          <button class="tab-btn" data-tab="cust-profile">
+            <span>👤</span> My Profile &amp; Contact
+          </button>
+        </nav>
+
+        <!-- CUSTOMER TAB 1: FLEET SHOWROOM -->
+        <section id="cust-fleet" class="tab-content active">
+          <div class="toolbar">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="cust-search-input" placeholder="Search rides by brand or model (e.g. Porsche, Tesla, Ducati)...">
+            </div>
+
+            <div class="filter-group" id="cust-type-filters">
+              <span style="font-size: 0.8rem; color: var(--text-dim); margin-right: 4px;">Category:</span>
+              <button class="chip-btn active" data-type="ALL">All Rides</button>
+              <button class="chip-btn" data-type="CAR">🚗 Cars</button>
+              <button class="chip-btn" data-type="BIKE">🏍️ Bikes</button>
+              <button class="chip-btn" data-type="VAN">🚐 Vans</button>
+            </div>
+          </div>
+
+          <div class="fleet-grid" id="cust-fleet-grid"></div>
+        </section>
+
+        <!-- CUSTOMER TAB 2: MY BOOKINGS -->
+        <section id="cust-my-rentals" class="tab-content">
+          <div class="panel-card">
+            <div class="panel-header">
+              <h2>📋 My Rental Transactions &amp; Receipts</h2>
+              <p>Active leases, past returns, security deposit records, and settlement details.</p>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Rental ID</th>
+                    <th>Vehicle</th>
+                    <th>Rental Period</th>
+                    <th>Rental Fee</th>
+                    <th>Security Deposit</th>
+                    <th>Late Fee</th>
+                    <th>Deposit Refund</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="cust-rentals-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- CUSTOMER TAB 3: PROFILE -->
+        <section id="cust-profile" class="tab-content">
+          <div class="panel-card" style="max-width: 600px; margin: 0 auto;">
+            <div class="panel-header">
+              <h2>👤 Patron Profile &amp; Preferences</h2>
+              <p>Your verified customer account information with Velocita Fleet Services.</p>
+            </div>
+
+            <div style="background: var(--bg-surface-elevated); padding: 22px; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); display: flex; flex-direction: column; gap: 14px;">
+              <div class="calc-row"><span>Customer ID:</span><strong id="prof-cust-id">C001</strong></div>
+              <div class="calc-row"><span>Full Name:</span><strong id="prof-cust-name">Anjali Menon</strong></div>
+              <div class="calc-row"><span>Contact Details:</span><strong id="prof-cust-contact">anjali@example.com</strong></div>
+              <div class="calc-row"><span>Driving Licence:</span><span><strong id="prof-cust-licence" style="font-family: monospace;">DL-0420180012345</strong> <span class="badge badge-available" style="margin-left: 6px;">Verified ✅</span></span></div>
+              <div class="calc-row"><span>Lifetime Rentals Count:</span><strong id="prof-cust-total">1</strong></div>
+              <div class="calc-row"><span>Account Status:</span><span class="badge badge-available">Verified Patron</span></div>
+            </div>
+
+            <div style="margin-top: 24px; text-align: right;">
+              <button class="btn btn-primary" onclick="switchCustomerTab('cust-fleet')">
+                Browse &amp; Book Rides
+              </button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+    </main>
+
+    <!-- App Footer -->
+    <footer class="app-footer">
+      <div class="container footer-inner">
+        <div>
+          <strong>Velocita Vehicle Rental System</strong> — Built with Java OOP principles &amp; Modern HTML/CSS/JS.
+        </div>
+        <div>
+          Logged in as: <strong id="footer-user-role">Administrator</strong>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <!-- =========================================================
+       MODALS
+       ========================================================= -->
+
+  <!-- MODAL: ADD VEHICLE (ADMIN ONLY) -->
+  <div class="modal-backdrop" id="modal-add-vehicle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>+ Add New Vehicle</h3>
+        <button class="close-btn" onclick="closeAddVehicleModal()">&times;</button>
+      </div>
+
+      <form id="form-add-vehicle" onsubmit="handleAddVehicleSubmit(event)">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-v-id">Vehicle ID *</label>
+          <input type="text" id="add-v-id" placeholder="e.g. V008" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-v-type">Vehicle Type *</label>
+          <select id="add-v-type" required>
+            <option value="CAR">Car</option>
+            <option value="BIKE">Bike</option>
+            <option value="VAN">Van</option>
+          </select>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-v-brand">Brand *</label>
+          <input type="text" id="add-v-brand" placeholder="e.g. BMW" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-v-model">Model *</label>
+          <input type="text" id="add-v-model" placeholder="e.g. M3 Competition" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-v-rate">Rental Rate Per Day (₹) *</label>
+          <input type="number" id="add-v-rate" min="1" step="5" placeholder="e.g. 180" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="add-v-details">Subclass Specifics</label>
+          <input type="text" id="add-v-details" placeholder="e.g. 5 Seats, Twin-Turbo Petrol">
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeAddVehicleModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDIT VEHICLE (ADMIN ONLY) -->
+  <div class="modal-backdrop" id="modal-edit-vehicle">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Edit Vehicle Details</h3>
+        <button class="close-btn" onclick="closeEditModal()">&times;</button>
+      </div>
+
+      <form id="form-edit-vehicle" onsubmit="handleEditVehicleSubmit(event)">
+        <input type="hidden" id="edit-v-id">
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="edit-v-brand">Brand *</label>
+          <input type="text" id="edit-v-brand" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="edit-v-model">Model *</label>
+          <input type="text" id="edit-v-model" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="edit-v-details">Specifications</label>
+          <input type="text" id="edit-v-details">
+        </div>
+
+        <p style="font-size: 0.82rem; color: var(--text-dim); margin-bottom: 16px; background: var(--bg-surface-elevated); padding: 8px 12px; border-radius: var(--radius-sm); border-left: 3px solid var(--accent-blue);">
+          💡 <strong>Rental Rate:</strong> Price adjustment is separated into the dedicated <strong>Fit Price</strong> tool on the vehicle card.
+        </p>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeEditModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: FIT VEHICLE PRICE (ADMIN DIRECT PRICE CONTROL) -->
+  <div class="modal-backdrop" id="modal-fit-price">
+    <div class="modal-card" style="max-width: 520px;">
+      <div class="modal-header">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 1.3rem;">💰</span>
+          <div>
+            <h3 style="margin: 0; font-size: 1.15rem;">Fit Vehicle Price</h3>
+            <p style="margin: 0; font-size: 0.8rem; color: var(--text-muted);" id="fit-price-subheading">Set any custom daily rental rate</p>
+          </div>
+        </div>
+        <button class="close-btn" onclick="closeFitPriceModal()">&times;</button>
+      </div>
+
+      <form id="form-fit-price" onsubmit="handleFitPriceSubmit(event)">
+        <input type="hidden" id="fit-price-veh-id">
+
+        <div style="background: var(--bg-surface-elevated); padding: 14px 18px; border-radius: var(--radius-sm); margin-bottom: 18px; border: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+          <div>
+            <div style="font-weight: 700; font-size: 1.05rem;" id="fit-price-veh-title">Porsche Taycan 4S</div>
+            <div style="font-size: 0.82rem; color: var(--text-dim);" id="fit-price-veh-meta">ID: V001 • CAR</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600;">Current Rate</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: var(--text-main);" id="fit-price-current-display">₹4,500.00 /day</div>
+          </div>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 12px;">
+          <label for="fit-price-input" style="font-weight: 700;">New Daily Rental Rate (₹) *</label>
+          <div style="position: relative;">
+            <span style="position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--text-muted); font-size: 1.1rem;">₹</span>
+            <input type="number" id="fit-price-input" step="any" min="1" required style="padding-left: 34px; font-size: 1.2rem; font-weight: 800; color: var(--accent-emerald);" placeholder="e.g. 5000" oninput="updateFitPricePreview()">
+          </div>
+          <small style="color: var(--text-dim); display: block; margin-top: 4px;">Enter any price — the system gives full administrative discretion.</small>
+        </div>
+
+        <!-- Quick Preset Chips -->
+        <div style="margin-bottom: 18px;">
+          <label style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 6px;">Quick Presets &amp; Adjustments:</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+            <button type="button" class="preset-chip" onclick="adjustFitPricePreset(500)">+₹500</button>
+            <button type="button" class="preset-chip" onclick="adjustFitPricePreset(1000)">+₹1,000</button>
+            <button type="button" class="preset-chip" onclick="adjustFitPricePreset(-500)">-₹500</button>
+            <button type="button" class="preset-chip" onclick="adjustFitPriceMultiplier(1.15)">+15% Peak</button>
+            <button type="button" class="preset-chip" onclick="adjustFitPriceMultiplier(0.85)">-15% Promo</button>
+            <button type="button" class="preset-chip" onclick="roundFitPrice()">Round ₹500</button>
+          </div>
+        </div>
+
+        <!-- Live Calculation Preview -->
+        <div style="background: var(--bg-surface-elevated); padding: 12px 16px; border-radius: var(--radius-sm); border: 1px dashed var(--border-card); margin-bottom: 20px; font-size: 0.85rem;">
+          <div style="font-weight: 700; margin-bottom: 6px; color: var(--text-main);">Live Rate Breakdown:</div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text-muted);">
+            <span>1-Day Rental:</span>
+            <strong style="color: var(--text-main);" id="fit-preview-1day">₹0.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 4px; color: var(--text-muted);">
+            <span>Weekend Trip (3 Days):</span>
+            <strong style="color: var(--text-main);" id="fit-preview-3day">₹0.00</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; color: var(--text-muted);">
+            <span>Calculated Security Deposit:</span>
+            <strong style="color: var(--accent-emerald);" id="fit-preview-deposit">₹0.00</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeFitPriceModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" style="padding: 10px 22px;">💾 Save &amp; Apply Price</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ADD CUSTOMER (ADMIN ONLY) -->
+  <div class="modal-backdrop" id="modal-add-customer">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>+ Register Customer</h3>
+        <button class="close-btn" onclick="closeAddCustomerModal()">&times;</button>
+      </div>
+
+      <form id="form-add-customer" onsubmit="handleAddCustomerSubmit(event)">
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-c-id">Customer ID *</label>
+          <input type="text" id="add-c-id" placeholder="e.g. C004" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-c-name">Full Name *</label>
+          <input type="text" id="add-c-name" placeholder="e.g. Aarav Sharma" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label for="add-c-contact">Contact Details (Email / Phone) *</label>
+          <input type="text" id="add-c-contact" placeholder="e.g. aarav@example.com" required>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+          <label for="add-c-licence">Driving Licence Number *</label>
+          <input type="text" id="add-c-licence" placeholder="e.g. DL-0420220019842" required>
+        </div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeAddCustomerModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Register Customer</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOMER RENTAL HISTORY (FOR ADMIN) -->
+  <div class="modal-backdrop" id="modal-customer-history">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <h3 id="history-modal-title">Customer Rental History</h3>
+        <button class="close-btn" onclick="closeHistoryModal()">&times;</button>
+      </div>
+
+      <div id="customer-history-content"></div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" class="btn btn-secondary" onclick="closeHistoryModal()">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: CUSTOMER BOOKING DIALOG (FOR CUSTOMER PORTAL) -->
+  <div class="modal-backdrop" id="modal-cust-book">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="cust-book-title">Reserve Ride</h3>
+        <button class="close-btn" onclick="closeCustBookingModal()">&times;</button>
+      </div>
+
+      <form id="form-cust-book" onsubmit="handleCustBookingSubmit(event)">
+        <input type="hidden" id="cust-book-veh-id">
+
+        <div style="background: var(--bg-surface-elevated); padding: 14px; border-radius: var(--radius-sm); margin-bottom: 16px; border: 1px solid var(--border-subtle);">
+          <div style="font-weight: 700; font-size: 1.05rem;" id="cust-book-veh-name">Porsche Taycan 4S</div>
+          <div style="font-size: 0.84rem; color: var(--text-dim);" id="cust-book-veh-rate">₹285.00 / day</div>
+          <div style="margin-top: 8px; font-size: 0.82rem; color: var(--accent-emerald); font-weight: 600; display: flex; align-items: center; gap: 6px;">
+            <span>🪪</span> <span id="cust-book-licence-badge">Verified Licence: Eligible to Rent</span>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="cust-book-start">Pick-up Date *</label>
+            <input type="date" id="cust-book-start" required onchange="updateCustBookingCalc()">
+          </div>
+
+          <div class="form-group">
+            <label for="cust-book-end">Drop-off Date *</label>
+            <input type="date" id="cust-book-end" required onchange="updateCustBookingCalc()">
+          </div>
+        </div>
+
+        <div class="calc-summary" id="cust-book-calc-summary" style="margin: 14px 0;"></div>
+
+        <div style="display: flex; gap: 10px; justify-content: flex-end;">
+          <button type="button" class="btn btn-outline" onclick="closeCustBookingModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary">Confirm &amp; Book Ride</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
